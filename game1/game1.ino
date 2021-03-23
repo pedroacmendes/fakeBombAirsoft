@@ -8,6 +8,9 @@ LiquidCrystal_I2C lcd(0x27,2,1,0,4,5,6,7,3, POSITIVE);
 
 String teclado;
 int tempo = 300; //300segundos = 5min
+int hora = 0;
+int minutos = 0;
+int segundos = 0;
 
 void setup() {
     //Pinos ligados aos pinos 1, 2, 3 e 4 do teclado - Linhas
@@ -25,11 +28,18 @@ void setup() {
 
     lcd.begin (16,2);
     lcd.setBacklight(HIGH);
-    lcd.print("Selecione modo de jogo -> A");
+    // lcd.print("Selecione modo de jogo -> A");
+    game1();
 }
 
 void loop() {
-    readKeyboard();
+    // readKeyboard();
+
+    digitalWrite (GPActiveBuzzer, HIGH);
+    delay(1000);
+    digitalWrite (GPActiveBuzzer, LOW);
+    delay(5000);
+
 }
 
 void readKeyboard(){
@@ -118,10 +128,24 @@ void game1(){
         lcd.print(tempo);
         tempo--;
     }
-    // de 5 em 5 segundos apitar
 
-    // digitalWrite (GPActiveBuzzer, HIGH);
-    // digitalWrite (GPActiveBuzzer, LOW);
+    while(tempo >= 0){
+
+        if(hora > 60){
+            hora++;
+        }
+
+        if(minutos > 60){
+            hora++;
+        }
+
+        if(segundos > 60){
+            minutos++;
+        }
+
+    }
+
+    // de 5 em 5 segundos apitar
 
     // se estiver nos ultimos 30 segundos da contagem decrescente apitar de 2 em 2 segundos
 }
