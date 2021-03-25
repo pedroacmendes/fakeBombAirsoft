@@ -87,8 +87,8 @@ void countdown (int tempoinicial) { //rotina de acionamento da bomba
                 minutos++;
             }
 
-            if(minutos == 1 && segundos == 0){
-                minutos = 0;
+            if(minutos >= 1 && segundos == 0){
+                minutos--;
                 segundos = 59;
             }
 
