@@ -21,23 +21,29 @@ int GPActiveBuzzer = 13;
 // VARIAVEIS
 int minutos = 0;
 int segundos = 0;
+long secMillis = 0;
+long interval = 1000;
+int segundosSom = 0;
+
 
 void setup() {
-    lcd.begin (16,2);
+    lcd.begin (16,4);
     lcd.setBacklight(HIGH);
     pinMode (GPActiveBuzzer, OUTPUT);
 
     lcd.print("Game mode:");
     lcd.setCursor(2, 1);
     lcd.print("A = Countdown");
+    lcd.setCursor(6, 2);
+    lcd.print("C = Defuse Bomb");
 }
 
 void loop() {
+
     char key = keypad.getKey();
 
     if(key == 'A'){
         lcd.clear();
-        int tempoinicial=(millis())/1000;
         lcd.print("Set game time!");
         lcd.setCursor(0, 1);
         lcd.print("00:00");
@@ -59,82 +65,26 @@ void loop() {
         }
         lcd.print(minutos);
 
-        delay(1000);
-        countdown(tempoinicial);
+        lcd.clear();
+        lcd.print("BOMBA ARMADA");
+    }
+
+    if(minutos >= 1 || segundos > 0){
+        countdown();
+    }
+
+    // FALTA FAZER O TEMPO APARECER NO MOMENTO QUE CARREGO NAS TECLAS
+
+    if(key == 'C'){
+        minutos = 0;
+        segundos = 0;
+        lcd.clear();
+        lcd.print("Bomb Defused");
     }
 
 }
 
-void countdown (int tempoinicial) { //rotina de acionamento da bomba
-    lcd.clear();
-    lcd.print("BOMBA ARMADA");
-
-    // converter tempo total para segundos
-    int tempoTotal = minutos*60L;
-    tempoTotal = tempoTotal + segundos;
-
-    int som = 0;
-
-    while(tempoTotal >= 0){
-        lcd.setCursor(2, 1);
-
-        int teste = 0;
-
-        for(tempoTotal; tempoTotal > 0; tempoTotal--){
-
-            if(segundos > 60){
-                segundos = 0;
-                minutos++;
-            }
-
-            if(minutos >= 1 && segundos == 0){
-                minutos--;
-                segundos = 59;
-            }
-
-            lcd.clear();
-            lcd.print("00:00");
-            if(segundos > 9){
-                lcd.setCursor(3, 0);
-            } else {
-                lcd.setCursor(4, 0);
-            }
-            lcd.print(segundos);
-
-            if(minutos > 9){
-                lcd.setCursor(0, 0);
-            } else {
-                lcd.setCursor(1, 0);
-            }
-            lcd.print(minutos);
-
-            segundos--;
-
-            // CICLO PARA TOCAR DE 5 EM 5 SEGUNDOS
-            if(teste == 5){
-                digitalWrite (GPActiveBuzzer, HIGH);
-                teste = 0;
-            } else {
-                digitalWrite (GPActiveBuzzer, LOW);
-            }
-
-            teste++;
-            delay(1000);
-        }
-
-        if(tempoTotal <= 0){
-            lcd.clear();
-            lcd.print("Terminou o tempo.");
-            while(1);
-        }
-
-    }
-    return;
-}
-
-
-int GetNumber()
-{
+int GetNumber(){
     int num = 0;
     char key = keypad.getKey();
     while(key != '#')
@@ -159,4 +109,60 @@ int GetNumber()
     }
 
     return num;
+}
+
+void countdown() {
+    lcd.setCursor (3,1);
+    if (minutos < 10){
+        lcd.write ("0");
+        lcd.setCursor (4,1);
+    }
+
+    lcd.print (minutos);
+    lcd.setCursor (5,1);
+    lcd.print (":");
+
+    if(segundos > 9){
+        lcd.setCursor(6, 1);
+    } else {
+        lcd.print("0");
+        lcd.setCursor(7, 1);
+    }
+    lcd.print(segundos);
+
+    if(segundos > 60){
+        segundos = 0;
+        minutos++;
+    }
+    if(minutos >= 1 && segundos == 0){
+        minutos--;
+        segundos = 59;
+    }
+
+    if(segundosSom >= 5){
+        digitalWrite (GPActiveBuzzer, HIGH);
+    } else {
+        digitalWrite (GPActiveBuzzer, LOW);
+    }
+
+    if(segundosSom == 6){
+        segundosSom = 0;
+    }
+
+    if (segundos >= 0){
+        long currentMillis = millis();
+
+        if(currentMillis - secMillis > interval){
+            secMillis = currentMillis;
+            segundos --;
+            segundosSom++;
+        }
+    }
+
+    if(minutos == 0 && segundos <= 0){
+        lcd.clear();
+        lcd.print("The Bomb Has Exploded!");
+        while(1);
+    }
+
 }
