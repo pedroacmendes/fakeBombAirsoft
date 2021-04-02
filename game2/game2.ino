@@ -20,8 +20,8 @@ int GPActiveBuzzer = 13;
 
 // RED & BLUE BUTTON
 int redButtonPin = 11;
-int redButtonState = 0;
 int blueButtonPin = 12;
+int redButtonState = 0;
 int blueButtonState = 0;
 
 // VARIAVEIS COUNTDOWN
@@ -31,8 +31,10 @@ long secMillis = 0;
 long interval = 1000;
 int segundosSom = 0;
 
-int led = 10;
+// variavel para ver se é o 1 ou 2 numero
 int tempo = 0;
+
+int led = 10;
 
 // progressBar
 byte zero[] = {
@@ -98,13 +100,6 @@ byte five[] = {
 
 int progress = 50;
 
-// hold button
-int holdTime = 250;
-int lastReading = LOW;
-int hold = 0;
-int LEDstate = 0;
-long onTime = 0;
-
 unsigned long startMillis;
 unsigned long currentMillis;
 
@@ -128,7 +123,7 @@ void setup() {
     lcd.setCursor(2, 1);
     lcd.print("BLUE = Start Game");
     lcd.setCursor(6, 2);
-    lcd.print("RED = Defused Bomb");
+    lcd.print("RED = Defuse Bomb");
 }
 
 void loop() {
@@ -143,22 +138,9 @@ void loop() {
         lcd.setCursor(0, 1);
         lcd.print("00:00");
 
-        segundos = GetNumber();
-        // se tiver 2 numeros adiciona no quadrado correto
-        if(segundos > 9){
-            lcd.setCursor(3, 1);
-        } else {
-            lcd.setCursor(4, 1);
-        }
-        lcd.print(segundos);
-
         minutos = GetNumber();
-        if(minutos > 9){
-            lcd.setCursor(0, 1);
-        } else {
-            lcd.setCursor(1, 1);
-        }
-        lcd.print(minutos);
+        tempo = 1;
+        segundos = GetNumber();
 
         lcd.clear();
         lcd.print("Starting game in");
@@ -169,7 +151,7 @@ void loop() {
         }
         lcd.clear();
         lcd.setCursor(4,0);
-        lcd.print("BOMBA ARMADA");
+        lcd.print("Active bomb");
     }
 
     if(minutos >= 1 || segundos > 0){
@@ -181,17 +163,23 @@ void loop() {
     startMillis = millis();
 
     if(reading == 0){
-        lcd.clear();
-        lcd.print("A desarmar bomba...");
-        digitalWrite (GPActiveBuzzer, HIGH);
-        digitalWrite(led, HIGH);
 
-        updateProgressBar(progress, 100);
-        progress++;
+        if(minutos == 0 && segundos == 0){
+            lcd.clear();
+            lcd.print("Start de game first.");
+            lcd.print("BLUE = Start Game");
+        } else {
+            lcd.clear();
+            lcd.print("Defusing bomb...");
+            digitalWrite (GPActiveBuzzer, HIGH);
+            digitalWrite(led, HIGH);
 
-        delay(300);
+            updateProgressBar(progress, 100);
+            progress++;
+            delay(300);
+            bombdefused();
+        }
 
-        bombdefused();
     }
 
 }
@@ -224,16 +212,29 @@ void updateProgressBar(unsigned long count, unsigned long totalCount){
 int GetNumber(){
     int num = 0;
     char key = keypad.getKey();
-    while(key != '#')
-    {
-        switch (key)
-        {
+
+    while(key != '#') {
+        switch (key){
             case NO_KEY:
             break;
 
             case '0': case '1': case '2': case '3': case '4':
             case '5': case '6': case '7': case '8': case '9':
             num = num * 10 + (key - '0');
+            if(tempo == 0){
+                if(num > 9){
+                    lcd.setCursor(0, 1);
+                } else {
+                    lcd.setCursor(1, 1);
+                }
+            } else {
+                if(num > 9){
+                    lcd.setCursor(3, 1);
+                } else {
+                    lcd.setCursor(4, 1);
+                }
+            }
+            lcd.print(num);
             break;
 
             case '*':
@@ -241,10 +242,8 @@ int GetNumber(){
             lcd.clear();
             break;
         }
-
         key = keypad.getKey();
     }
-
     return num;
 }
 
@@ -300,7 +299,7 @@ void countdown() {
 
     if(minutos == 0 && segundos <= 0){
         lcd.clear();
-        lcd.print("The Bomb Has Exploded!");
+        lcd.print("The bomb has exploded!");
         segundosSom = 0;
         delay(1000);
     }
