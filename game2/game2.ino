@@ -103,6 +103,11 @@ int progress = 50;
 unsigned long startMillis;
 unsigned long currentMillis;
 
+
+// pressbutton
+int startPressed = 0;    // the moment the button was pressed
+
+
 void setup() {
     lcd.begin (16,4);
     lcd.setBacklight(HIGH);
@@ -133,36 +138,40 @@ void loop() {
     redButtonState = digitalRead(redButtonPin);
 
     if (blueButtonState != HIGH) {
-        lcd.clear();
-        lcd.print("Set game time");
-        lcd.setCursor(0, 1);
-        lcd.print("00:00");
 
-        minutos = GetNumber();
-        tempo = 1;
-        segundos = GetNumber();
+        if(minutos == 0 && segundos == 0){
+            lcd.clear();
+            lcd.print("Set game time");
+            lcd.setCursor(0, 1);
+            lcd.print("00:00");
 
-        lcd.clear();
-        lcd.print("Starting game in");
-        for (int i=3;i > 0; i--){
-            lcd.setCursor(1, 1);
-            lcd.print(i);
-            delay(1000);
+            minutos = GetNumber();
+            tempo = 1;
+            segundos = GetNumber();
+
+            lcd.clear();
+            lcd.print("Starting game in");
+            for (int i=3;i > 0; i--){
+                lcd.setCursor(1, 1);
+                lcd.print(i);
+                delay(1000);
+            }
+            lcd.clear();
+            lcd.setCursor(4,0);
+            lcd.print("Active bomb");
+        }else{            
         }
-        lcd.clear();
-        lcd.setCursor(4,0);
-        lcd.print("Active bomb");
+
     }
 
     if(minutos >= 1 || segundos > 0){
         countdown();
     }
 
-    int reading = digitalRead(redButtonPin);
-
     startMillis = millis();
 
-    if(reading == 0){
+    if(redButtonState == 0){
+        startPressed = millis();
 
         if(minutos == 0 && segundos == 0){
             lcd.clear();
